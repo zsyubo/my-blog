@@ -250,7 +250,7 @@ protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 
 
 
-# loadBeanDefinitions
+# loadBeanDefinitions的前置准备工作
 
 是一个抽象方法，具体实现是`AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)`。
 
@@ -303,6 +303,8 @@ protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 	}
 ```
 
+这里需要注意的是：`resourceLoader`引用的是`PathMatchingResourcePatternResolver`。这个在后面`load`时会用到。
+
 `AbstractBeanDefinitionReader#resourceLoader  = new PathMatchingResourcePatternResolver();`
 
 
@@ -339,7 +341,7 @@ protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 	}
 ```
 
-核心方法
+核心方法, 从指定的资源位置加载`BeanDefinitions`
 
 ```java
 	public int loadBeanDefinitions(String location, @Nullable Set<Resource> actualResources) throws BeanDefinitionStoreException {
@@ -350,10 +352,13 @@ protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 					"Cannot load bean definitions from location [" + location + "]: no ResourceLoader available");
 		}
 
+		// resourceLoader 为 PathMatchingResourcePatternResolver
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
+				// 通过ResourcePatternResolver，将xml 路径转化Resource资源
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+				// loadBeanDefinitions方法具体到子类实现，所以由XmlBeanDefinitionReader实现加载功能。
 				int count = loadBeanDefinitions(resources);
 				if (actualResources != null) {
 					Collections.addAll(actualResources, resources);
@@ -383,9 +388,105 @@ protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 	}
 ```
 
+接着看下`AbstractBeanDefinitionReader#loadBeanDefinitions`
 
+```java
+@Override
+	public int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException {
+		Assert.notNull(resources, "Resource array must not be null");
+		int count = 0;
+		// 当有多个xml文件时循环架子啊，最终返回加载的Bean数量
+		for (Resource resource : resources) {
+			count += loadBeanDefinitions(resource);
+		}
+		return count;
+	}
+```
 
+`loadBeanDefinitions`的具体实现：`XmlBeanDefinitionReader#loadBeanDefinitions`
 
+```java
+@Override
+	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+		//将读入的XML进行编码处理
+		return loadBeanDefinitions(new EncodedResource(resource));
+	}
+	
+public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
+		Assert.notNull(encodedResource, "EncodedResource must not be null");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Loading XML bean definitions from " + encodedResource);
+		}
+		// 当前记载资源集合，如果为null则初始化，特意使用了ThreadLocal
+		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
+		if (currentResources == null) {
+			currentResources = new HashSet<>(4);
+			this.resourcesCurrentlyBeingLoaded.set(currentResources);
+		}
+		// 如果添加失败。。。emmm。。。什么情况会出现添加失败？毕竟都初始化了。encodedResource也做了判空处理，同时TreadLocal在执行完此文件读取后也会remove。
+		if (!currentResources.add(encodedResource)) {
+			throw new BeanDefinitionStoreException(
+					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
+		}
+		try {
+			// 根据resource获取到输入流。
+			InputStream inputStream = encodedResource.getResource().getInputStream();
+			try {
+				// 一个输入源，或者说解析源
+				InputSource inputSource = new InputSource(inputStream);
+				if (encodedResource.getEncoding() != null) {
+					inputSource.setEncoding(encodedResource.getEncoding());
+				}
+				// 具体的加载方法
+				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
+			}
+			finally {
+				inputStream.close();
+			}
+		}
+		catch (IOException ex) {
+			throw new BeanDefinitionStoreException(
+					"IOException parsing XML document from " + encodedResource.getResource(), ex);
+		}
+		finally {
+			currentResources.remove(encodedResource);
+			if (currentResources.isEmpty()) {
+				this.resourcesCurrentlyBeingLoaded.remove();
+			}
+		}
+	}
+
+protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
+			throws BeanDefinitionStoreException {
+
+		try {
+			// 获取文档的dom对象
+			Document doc = doLoadDocument(inputSource, resource);
+			// 启动对 Bean定义的解析过程，
+			int count = registerBeanDefinitions(doc, resource);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Loaded " + count + " bean definitions from " + resource);
+			}
+			return count;
+		}
+  .....
+}
+
+	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// DefaultBeanDefinitionDocumentReader
+		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 获得容器中注册的Bean数量。
+		int countBefore = getRegistry().getBeanDefinitionCount();
+		// 解析的人口,实际调用的是：DefaultBeanDefinitionDocumentReader.registerBeanDefinitions
+		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		// 统计解析的Bean的数量
+		return getRegistry().getBeanDefinitionCount() - countBefore;
+}
+```
+
+进行一系列的准备工作后，终于开始解析XML了。
+
+# 开始从文件中读取BeanDefinitions
 
 
 
