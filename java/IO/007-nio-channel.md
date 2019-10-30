@@ -9,6 +9,8 @@
 3. `SocketChannel`: 用于TCP`客户端`的网络通信
 4. `ServerSocketChannel`：用于TCP`服务端`的网络通信。
 
+Java NIO的`ServerSocketChannel`就是用来监听TCP连接的，就像标准的Java网络编程里的`ServerSocket`一样，而`SocketChannel`则是具体的连接。
+
 # `FileChannel`
 
 文件通道，可以对文件的读写，但是文件通道是阻塞式的。

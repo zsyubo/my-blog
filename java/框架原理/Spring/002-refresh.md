@@ -486,7 +486,7 @@ protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
 
 进行一系列的准备工作后，终于开始解析XML了。
 
-# 开始从文件中读取BeanDefinitions
+# 
 
 
 
