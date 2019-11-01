@@ -46,7 +46,6 @@ int main()
 # # const char *, char const * , char * const 区别
 
 <p style="color:red"> const是修饰其右边的内容 </p>
-
 ## ## const char *  
 ```c++
 const char *   p
@@ -71,3 +70,12 @@ const char * const  p
  p的指向和p指向的内容也不能改变。
 
 也就是`p和*p都是常量。`
+
+# ~~通过引用来让指针指向值无法修改~~
+
+```c++
+int age =10;
+const int &ref = age;
+const int *p = &age;
+```
+

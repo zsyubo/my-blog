@@ -33,9 +33,17 @@ int ac {3.5f}
 
 // 指针
 int *p= &value;
+// 指针的引用
+int *&ref = p;
 *p=30;
+
+//数组的引用
+int array[] = {1,2,3};
+// 必须写三，也就是数组大小
+int (&ref)[3] = array;
+ref[0]= 99;
 ```
-引用是指针的弱化版，更安全。  一个引用占用一个指针的大小 。指针的汇编代码和引用一样的。
+引用是指针的弱化版(汇编一样，只是编译器做了限制)，更安全。  一个引用占用一个指针的大小 。指针的汇编代码和引用一样的。
 
 一般用于参数传递过程中，直接修改变量值。
 
@@ -64,4 +72,85 @@ void func(int &a, int &b) {
 
 > 引用是一个指向其它对象的常量指针，它保存着所指对象的存储地址。并且使用的时候会自动解引用，而不需要像使用指针一样显式提领。
 
-## const 与 引用
+##  常引用
+
+```c++
+const int &ref = 30;
+```
+
+`const与引用结合使用过时，其实和指针是差不多的。
+
+常引用用处挺多的，比如传参
+
+```c++
+int sum( const int &v1, const int &v2){
+	return v1 + v2;
+}
+// 直接传值时，函数参数必须是常引用
+sum(10,20);
+```
+
+`const`修饰的参数名可以接受`const`和非`const`实参。而非`const`引用只能接收非`const`实参。可以和`非const`引用构成重载:
+
+```c++
+int sum( const int &v1, const int &v2){
+	return v1 + v2;
+}
+int sum(int &v1, int &v2){
+	return v1 + v2;
+}
+```
+
+测试代码
+
+```c++
+	{
+		int a = 10;
+		int b = 20;
+		std::cout  << sum(a, b) << std::endl;
+	}
+	{
+		const int a = 10;
+		const int b = 20;
+		std::cout << sum(a, b) << std::endl;
+	}
+```
+
+结果
+
+```
+sum( int &v1,  int &v2)
+30
+
+sum(const int &v1, const int &v2)
+30
+```
+
+## 常引用引发的一些奇怪问题
+
+```c++
+	int rage = 1;
+	const long &rang = rage;
+	rage = 2;
+	std::cout << "rage："<< rage << std::endl;  // 2
+	std::cout << "rang：" << rang << std::endl;  // 1
+```
+
+结果与我们想的30,30不一样，通过看汇编代码知晓原因
+
+```assembly
+// int rage = 1
+00136056  mov         dword ptr [ebp+FFFFFF70h],1  
+//  取 rage 的值 到eax
+00136060  mov         eax,dword ptr [ebp+FFFFFF70h]  
+// 把 eax的值 写入到新地址
+00136066  mov         dword ptr [ebp+FFFFFF58h],eax  
+// 把 刚才写入的新地址传给exc
+0013606C  lea         ecx,[ebp+FFFFFF58h]  
+// 把exc地址的写入到 rang引用
+00136072  mov         dword ptr [ebp+FFFFFF64h],ecx  
+// 	rage = 2;
+00136078  mov         dword ptr [ebp+FFFFFF70h],2 
+```
+
+从这里看出:`	const long &rang = rage;`不是直接吧 `rage`的地址给`&rang`，而且先把数据拷贝了一份到一个新地址，然后吧新地址传个`&rang`，所以修改`rage`对`&rang`无效。
