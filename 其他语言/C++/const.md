@@ -1,5 +1,5 @@
-#   # 常量
-表示此变量不可以修改。
+#   1. 常量
+表示此变量不可以修改。且必须定义时进行初始化，或者构造函数中初始化。
 
 ```c++
  const int var1 = 7;
@@ -20,11 +20,27 @@
 	a->age = 10; // 编译失败，const修饰的变量不能修改其成员属性值。
 ```
 
-## ## const 与类
+## const 与类
 
-当一个实例使用const表示时，那么此实例无法调用非const方法，也就是无法调用普通实例方法。
+当一个实例使用const表示时，那么此实例无法调用非const方法，也就是`无法调用普通实例方法`。
 
-# #  constexpr 关键字，c++11引入
+## const成员方法
+
+```c++
+
+class Student {
+public:
+	void say() const {
+	}
+};
+```
+
+在`const`修饰的成员函数不能修改非`static`修饰的成员变量。
+
+`cosnt`修改的成员函数与非`const`修饰的成员函数之间构成`重载`。
+
+# 2. constexpr 关键字，c++11引入
+
 也一样是常量概念。在编译的时候求值，好处是提升性能。`constexpr` 等式左右必须是常量
 ```c++
  constexpr int var2 = 1;
@@ -43,7 +59,7 @@ int main()
 }
 ```
 
-# # const char *, char const * , char * const 区别
+# 3. const char *, char const * , char * const 区别
 
 <p style="color:red"> const是修饰其右边的内容 </p>
 ## ## const char *  
@@ -71,7 +87,11 @@ const char * const  p
 
 也就是`p和*p都是常量。`
 
-# ~~通过引用来让指针指向值无法修改~~
+# const参数
+
+todo
+
+# 通过引用来让指针指向值无法修改~~
 
 ```c++
 int age =10;
