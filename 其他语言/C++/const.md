@@ -39,7 +39,19 @@ public:
 
 `cosnt`修改的成员函数与非`const`修饰的成员函数之间构成`重载`。
 
-# 2. constexpr 关键字，c++11引入
+# 2. const方法参数
+
+一般我们在写方法接受对象是，会这样写
+
+```c++
+void say(const Point &p1) const {
+	.....
+}
+```
+
+为什么这样写了，因为`const`能接受的范围更大，可以接受`cosnt`和`非const`参数。
+
+# 3. constexpr 关键字，c++11引入
 
 也一样是常量概念。在编译的时候求值，好处是提升性能。`constexpr` 等式左右必须是常量
 ```c++
@@ -59,7 +71,7 @@ int main()
 }
 ```
 
-# 3. const char *, char const * , char * const 区别
+# 4. const char *, char const * , char * const 区别
 
 <p style="color:red"> const是修饰其右边的内容 </p>
 ## ## const char *  
@@ -87,11 +99,7 @@ const char * const  p
 
 也就是`p和*p都是常量。`
 
-# const参数
-
-todo
-
-# 通过引用来让指针指向值无法修改~~
+# ~~通过引用来让指针指向值无法修改~~
 
 ```c++
 int age =10;
