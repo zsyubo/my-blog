@@ -1,5 +1,8 @@
-#   1. 常量
-表示此变量不可以修改。且必须定义时进行初始化，或者构造函数中初始化。
+# 1. 常量
+
+表示此变量不可以修改。很多时候常用来替代宏。全局变量和类数据成员都可以用`const`修饰
+
+且必须定义时进行初始化，或者构造函数中初始化。
 
 ```c++
  const int var1 = 7;
@@ -41,7 +44,7 @@ public:
 
 # 2. const方法参数
 
-一般我们在写方法接受对象是，会这样写
+一般我们在写方法接受对象时，会这样写。多用于不用修改这个值。
 
 ```c++
 void say(const Point &p1) const {
@@ -51,13 +54,15 @@ void say(const Point &p1) const {
 
 为什么这样写了，因为`const`能接受的范围更大，可以接受`cosnt`和`非const`参数。
 
+> 将对象作为参数传递时，默认选择是`const`引用。只有在明确需要修改对象时，才忽略`const`。
+
 # 3. constexpr 关键字，c++11引入
 
 也一样是常量概念。在编译的时候求值，好处是提升性能。`constexpr` 等式左右必须是常量
-```c++
+
  constexpr int var2 = 1;
  constexpr auto var22 = 1;
-```
+
 当然也可以这样定义
 ```c++
 // 必须加 constexpr 
@@ -71,7 +76,41 @@ int main()
 }
 ```
 
-# 4. const char *, char const * , char * const 区别
+# 4. const 指针
+
+我们知道指针分为2部分，一部分是指向的数据，一部分是指针本身(地址)。所以在使用const修饰时就会变得微妙。到底是不能让指针指向的地址不能改还是指向的数据不能改？
+
+**const int* ip **
+
+无法改变ip指向的值，语义上等价`int const* ip;`
+
+**int* const ip**
+
+这是将ip本身标记为`const`，不能修改所指向的地址。这是因为ip不能修改，所以必须在声明时进行初始化。
+
+**const int* const ip**
+
+进步修改指针指向的地址，也不能修改所指向的值。
+
+
+
+# 5. const 引用
+
+因为const是默认无法改变引用所指向的对象的。所以加`const`的情况和指针有点区别。引用的const只能加在最前面。
+
+同时加了`const`就意味着无法修改对象所指向的值。
+
+```
+int z =0;
+const int& zRef = z;
+zRef = 4; // 编译失败。
+```
+
+
+
+****
+
+# 6. const char *, char const * , char * const 区别
 
 <p style="color:red"> const是修饰其右边的内容 </p>
 ## ## const char *  
