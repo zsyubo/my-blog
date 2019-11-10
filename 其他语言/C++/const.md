@@ -47,7 +47,7 @@ public:
 一般我们在写方法接受对象时，会这样写。多用于不用修改这个值。
 
 ```c++
-void say(const Point &p1) const {
+void say(const Point &p1) {
 	.....
 }
 ```
@@ -75,6 +75,12 @@ int main()
  constexpr auto var2233 = funcC(3);
 }
 ```
+
+`constexpr`修饰函数时，需要注意的一些限制：
+
+1. 函数体必须有return语句，同时不能包含goto语句和try catch块。也不能抛出异常。但是可以调用其他`constexpr`函数。
+2. `constexpr`不能修饰虚函数。
+3. 函数体中不能使用`new`和`delete`，否则无法通过编译。
 
 # 4. const 指针
 
@@ -106,11 +112,20 @@ const int& zRef = z;
 zRef = 4; // 编译失败。
 ```
 
-
-
 ****
 
-# 6. const char *, char const * , char * const 区别
+# 6. const修饰的成员函数
+
+被声明为`const`的成员函数可以访问类中的所有成员变量，但是`不能修改他们的值(如果是指针或引用，可以修改他所指向的值)`，这种措施主要是为了保护数据而设置。`const`成员函数也被称为`常成员函数`。
+
+```c++
+ void setAge() const{
+  }
+```
+
+总结：`非const对象可以调用const方法和非const方法。然而const对象只能调用const方法。`
+
+# 7. const char *, char const * , char * const 区别
 
 <p style="color:red"> const是修饰其右边的内容 </p>
 ## ## const char *  
