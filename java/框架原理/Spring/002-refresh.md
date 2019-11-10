@@ -135,7 +135,7 @@ protected void prepareRefresh() {
 
 
 
-# `ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();`
+# `ConfigurableListableBeanFactory beanFactory=obtainFreshBeanFactory();`
 
 这个方法就很重要了，光看着一行，就能看出是初始化`BeanFactory`的。这句话以后的代码都是注册容器的信息源和生命周期时间。
 
@@ -173,7 +173,7 @@ protected void prepareRefresh() {
 			beanFactory.setSerializationId(getId());
 			// 对 IOC 容器进行定制化， 如设置启动参数， 开启注解的自动装配等
 			customizeBeanFactory(beanFactory);
-      // 调用载入Bean定义的方法。交由子类实现。
+      // 调用载入Bean定义的方法。交由子类实现。核心方法
 			loadBeanDefinitions(beanFactory);
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
@@ -252,7 +252,7 @@ protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
 
 # loadBeanDefinitions的前置准备工作
 
-是一个抽象方法，具体实现是`AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)`。
+ok，开始正式准备解析XML了。是一个抽象方法，具体实现是`AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)`。
 
 ```java
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
