@@ -1,4 +1,4 @@
-# refresh
+#refresh
 
 接下来就到了正式的加载Bean的过程了。SpringIOC容器对`Bean`定义资源的载入是从`refresh()`开始的，`refresh()`是一个模板方法，主干在``AbstractApplicationContext`中定义。
 
@@ -230,7 +230,7 @@ protected DefaultListableBeanFactory createBeanFactory() {
 
 ```
 
-上面的方法就是创建一个`DefaultListableBeanFactory`了。
+上面的方法就是创建一个`DefaultListableBeanFactory`了。这个`DefaultListableBeanFactory`非常重要，后面注册Bean也是会用到。
 
 ```java
 /**
@@ -486,11 +486,16 @@ protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
 
 进行一系列的准备工作后，终于开始解析XML了。
 
-# 
+# createReaderContext(resource)
 
+这儿需要注意下此方法
 
-
-
+```java
+	public XmlReaderContext createReaderContext(Resource resource) {
+		return new XmlReaderContext(resource, this.problemReporter, this.eventListener,
+				this.sourceExtractor, this, getNamespaceHandlerResolver());
+	}
+```
 
 
 

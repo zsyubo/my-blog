@@ -213,3 +213,55 @@ protected void importBeanDefinitionResource(Element ele) {
 	}
 ```
 
+`registerAlias`中的代码也非常简单
+
+```c++
+public void registerAlias(String name, String alias) {
+		Assert.hasText(name, "'name' must not be empty");
+		Assert.hasText(alias, "'alias' must not be empty");
+		// 同步
+		synchronized (this.aliasMap) {
+			// 如果 bean名字和别名一样，则移除别名map中相同别名的。？
+			if (alias.equals(name)) {
+				// 感觉加不加无所谓吧
+				this.aliasMap.remove(alias);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Alias definition '" + alias + "' ignored since it points to same name");
+				}
+			}
+			else {
+				String registeredName = this.aliasMap.get(alias);
+				// 如果别名以关联了bean了。
+				if (registeredName != null) {
+					if (registeredName.equals(name)) {
+						// An existing alias - no need to re-register
+						return;
+					}
+					if (!allowAliasOverriding()) {
+						throw new IllegalStateException("Cannot define alias '" + alias + "' for name '" +
+								name + "': It is already registered for name '" + registeredName + "'.");
+					}
+					if (logger.isDebugEnabled()) {
+						logger.debug("Overriding alias '" + alias + "' definition for registered name '" +
+								registeredName + "' with new target name '" + name + "'");
+					}
+				}
+				checkForAliasCircle(name, alias);
+				// 就是注册bean
+				this.aliasMap.put(alias, name);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Alias definition '" + alias + "' registered for name '" + name + "'");
+				}
+			}
+		}
+	}
+```
+
+从代码中可以看出
+
+```java
+	/** Map from alias to canonical name. */
+	private final Map<String, String> aliasMap = new ConcurrentHashMap<>(16);
+```
+
+`aliasMap`就是存储别名的，且别名为key。
