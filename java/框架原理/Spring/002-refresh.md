@@ -15,6 +15,7 @@
 			// Tell the subclass to refresh the internal bean factory.
 			//告诉子类启动 refreshBeanFactory()方法，Bean 定义资源文件的载入从
 			//子类的 refreshBeanFactory()方法启动
+      // 这里将会初始化 BeanFactory、加载 Bean、注册 Bean 等等。
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
