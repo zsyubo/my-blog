@@ -81,7 +81,9 @@ int main() {
     if( myFIle.is_open() ){
         std::cout << "file is open" << std::endl;
         string name ;
+      // 未达到文件末尾都会返回true。
         while(myFIle.good()){
+          // 使用getLine获取一行数据
             getline( myFIle, name);
             std::cout << "read: "<< name << endl;
         }
@@ -101,7 +103,46 @@ int main() {
     }
 ```
 
+**二进制序列化**
 
+```c++
+class Student{
+public:
+    int m_age;
+    string m_name;
+    int m_clazz;
+    Student(int age, string name, int clazz):m_age(age),m_name(name),m_clazz(clazz){}
+    Student()= default;
+};
+
+int main() {
+    // ReadText.txt
+    string fileName = "ReadText1bin";
+    // 写入
+    {
+        std::fstream myFIle(fileName, std::ios_base::in | ios_base::out | ios_base::binary );
+        if( myFIle.is_open() ){
+            std::cout << "file is open, ready write;" << std::endl;
+            Student stu =  Student(19,"xiaohu", 3);
+            myFIle.write(reinterpret_cast<const char *>(&stu), sizeof( myFIle ));
+            myFIle.close();
+        }
+    }
+    // 读取
+    {
+        std::fstream myFIle(fileName, std::ios_base::in |  ios_base::binary );
+        Student stu;
+        if( myFIle.is_open() ){
+            myFIle.read( (char *) &stu, sizeof( stu));
+            cout<< "age:"<< stu.m_age << ";name:"<< stu.m_name<< ";clazz:"<< stu.m_clazz << endl;
+            myFIle.close();
+        }
+    }
+    return 0;
+}
+```
+
+此是一个保存到文件并读取的案例。
 
 # 异常
 
