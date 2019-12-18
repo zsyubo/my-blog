@@ -18,7 +18,23 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-**同时我们很方便进行字符串相加**
+当然也可以常量字符串初始化string
+
+```c++
+    const char * cc="Hello world";
+    string* a = new string(cc);
+```
+
+我们也可以通过迭代器来遍历string
+
+```c++
+// for (string::iterator ai=a->begin(); ai!=a->end(); ai++) 
+for (auto ai=a->begin(); ai!=a->end(); ai++) {
+        cout<<"1:"<<*ai<<endl;
+    }
+```
+
+**同时我们很方便进行字符串相加(也可以使用append函数)**
 
 ```c++
     string a("a");
@@ -45,6 +61,27 @@ long i  stol(s);
 ```
 
 每种基础类型都提供了，这里就不贴其他的了。
+
+**截取字符串**
+
+```c++
+    a->erase(3,6);
+// 字节修改的原字符串
+    cout<< *a<< endl;
+```
+
+当然重载的api还有很多
+
+**查找字符串**
+
+```c++
+    size_t index = a->find(b);
+    cout << index << endl;
+    // 如果未匹配到字符串，则会返回一个特殊数值，也就是string::npos
+    cout << string::npos << endl;
+```
+
+
 
 
 
