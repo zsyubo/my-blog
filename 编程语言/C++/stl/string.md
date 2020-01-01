@@ -81,10 +81,6 @@ long i  stol(s);
     cout << string::npos << endl;
 ```
 
-
-
-
-
 ## 非标准字符串
 
 除了C++标准为，还有一些其他的字符串类型，比如MFC的`CString`，这里就不细说了。
