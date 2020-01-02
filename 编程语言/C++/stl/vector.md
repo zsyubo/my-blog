@@ -1,6 +1,8 @@
-# `vector
+# vector
 
-`vector`是一个模板类，提供了额动态数组的通用功能。使用需要引入头文件`#include <vector>`
+`vector`是一个模板类，提供了额动态数组的通用功能。使用需要引入头文件`#include <vector>`。
+
+`vector`是一个顺序容器，元素的存储顺序和插入顺序相同。
 
 # vector初始化
 
@@ -114,6 +116,18 @@ void ff(vector<string> &nn)
     names.erase(names.begin(),names.begin()+2);
     vector_iteartor::iteratorContainer<string>(names);
 ```
+
+## clear清空容器
+
+```c++
+    vector<string> name;
+    name.push_back("bob");
+    name.push_back("sam");
+    name.push_back("jams");
+		name.clear();
+```
+
+`clear`只是清空元素，即`size=0`，但是`capacity`不一定为0。
 
 # 容量与大小
 
