@@ -167,3 +167,5 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 
 3. 分别⾛链表和红⿊树不同类型的查找⽅法。
 
+## remove
+
