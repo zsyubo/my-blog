@@ -73,6 +73,11 @@
 
 命令格式：`jstat [options] VMID [interval] [count]`  , [interval]指时间间隔， [count]一共输出10次结果
 
+```
+# 隔一秒输出一次，一共输出10次
+jstat -gc 28806  1000 10
+```
+
 #### 参数详解
 
 | Option           | Displays                                                     |
@@ -137,7 +142,51 @@
 > FailedType : 失败类型
 > FailedMethod : 失败方法的全限定名
 
-#  5.  jstack
+#  4.  jstack
 > jstack是java虚拟机自带的一种堆栈跟踪工具。jstack用于打印出给定的java进程ID或core file或远程调试服务的Java堆栈信息
 
 <img src="https://s1.ax1x.com/2020/04/08/GRZdat.png" style="zoom:67%;" />
+
+# Jmap
+
+　jmap命令是一个可以输出所有内存中对象的工具，甚至可以将VM 中的heap，以二进制输出成文本。
+
+无参数则打印进程的内存镜像信息。
+
+**参数**
+
+| 参数          | 作用                                                         |
+| ------------- | ------------------------------------------------------------ |
+| heap          | 堆的摘要信息，包括使用的GC算法、堆配置信息和各内存区域内存使用信息 |
+| histo[:live]  | 显示堆中对象的统计信息                                       |
+| clstats       | 打印类加载器信息                                             |
+| finalizerinfo | 显示在F-Queue队列等待Finalizer线程执行finalizer方法的对象    |
+| dump          | 生成堆转储快照                                               |
+| F             | 当-dump没有响应时，使用-dump或者-histo参数. 在这个模式下,live子参数无效. |
+| J<flag>       | 指定传递给运行jmap的JVM的参数                                |
+
+**histo[:live]**
+
+```
+jmap -histo:live  28806
+```
+
+如果指定了live子选项，则只计算活动的对象。
+
+**dump**
+
+```
+ jmap -dump:format=b,file=heapdump.hhrof 28806
+ // 只dump存活对象
+  jmap -dump:live,format=b,file=heapdump.hhrof 28806
+```
+
+dump一份堆内存。
+
+**查看dump文件**
+
+```
+jhat dump.hprof -port 7000
+```
+
+通过jhat，我们可以在浏览器中查看堆内存的对象分布情况。

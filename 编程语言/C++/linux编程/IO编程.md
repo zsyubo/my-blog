@@ -25,7 +25,7 @@ cout << fileno(stderr) << endl;//2
 
 # 打开、创建文件
 
-linux提供open函数来打开或者创建一个文件
+linux提供open函数来打开或者创建一个文件，返回fd。
 
 ```c++
 // 引入头文件
@@ -34,6 +34,8 @@ linux提供open函数来打开或者创建一个文件
 int open(const char *pathname, int flags);
 int open(const char *pathname, int flags, mode_t mode);
 ```
+
+open有打开数量限制，命令`ulimit  -a`来查看。
 
 - pathname： (绝对或者相对)路径+文件名称
 - flags: 文件打开方式
