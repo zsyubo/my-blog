@@ -108,30 +108,42 @@ jstat -gc 28806  1000 10
 
 2. 查看GC信息
 
-   ![](https://s1.ax1x.com/2020/04/08/GRZtrd.png)
+   <img src="https://s1.ax1x.com/2020/04/08/GRZtrd.png" style="zoom:150%;" />
 
 > `C即Capacity 总容量，U即Used 已使用的容量`
-> 参数	描述
-> NGCMN	新生代最小容量
-> NGCMX	新生代最大容量
-> NGC	当前新生代容量
-> S0C	第一个幸存区大小
-> S1C	第二个幸存区的大小
-> EC	伊甸园区的大小
-> OGCMN	老年代最小容量
-> OGCMX	老年代最大容量
-> OGC	当前老年代大小
-> OC	当前老年代大小
-> MCMN	最小元数据容量
-> MCMX	最大元数据容量
-> MC	当前元数据空间大小
-> CCSMN	最小压缩类空间大小
-> CCSMX	最大压缩类空间大小
-> CCSC	当前压缩类空间大小
-> YGC	年轻代gc次数
-> FGC	老年代GC次数
 
-3. 输出JIT编译过的方法数量耗时等
+| 参数  | 描述                                       |
+| ----- | ------------------------------------------ |
+| S0C   | 第一个幸存区大小(From Survivor区大小)      |
+| S1C   | 第二个幸存区的大小(To Survivor区大小)      |
+| S0U   | From Survivor区当前使用的内存大小          |
+| S1U   | To Survivor区当前使用的内存大小            |
+| EC    | 伊甸(Eden)区的大小                         |
+| EU    | 这是Eden区当前使用的内存大小               |
+| OC    | 当前老年代大小                             |
+| OU    | 老年代当前使用的内存大小                   |
+| MC    | 方法区(元数据区、永久代)的当前内存大小     |
+| MU    | 方法区(元数据区、永久代)的当前使用内存大小 |
+| YGC   | 年轻代gc次数                               |
+| YGCT  | 年轻代GC的耗时                             |
+| FGC   | 老年代GC次数                               |
+| FGCT  | Full GC的耗时                              |
+| GCT   | 所有GC总耗时                               |
+| NGCMN | 新生代最小容量                             |
+| NGCMX | 新生代最大容量                             |
+| NGC   | 当前新生代容量                             |
+| OGCMN | 老年代最小容量                             |
+| OGCMX | 老年代最大容量                             |
+| OGC   | 当前老年代大小                             |
+| MCMN  | 最小元数据容量                             |
+| MCMX  | 最大元数据容量                             |
+| CCSMN | 最小压缩类空间大小                         |
+| CCSMX | 最大压缩类空间大小                         |
+| CCSC  | 当前压缩类空间大小                         |
+
+
+
+1. 输出JIT编译过的方法数量耗时等
 
    ![](https://s1.ax1x.com/2020/04/08/GRZaVI.png)
 
@@ -142,12 +154,21 @@ jstat -gc 28806  1000 10
 > FailedType : 失败类型
 > FailedMethod : 失败方法的全限定名
 
+**一些其他参数**
+
+1. jstat -gccapacity PID：堆内存分析
+2. jstat -gcnew PID：年轻代GC分析，这⾥的TT和MTT可以看到对象在年轻代存活的年龄和存活的最⼤年龄
+3. jstat -gcnewcapacity PID：年轻代内存分析
+4. jstat -gcold PID：⽼年代GC分析
+5. jstat -gcoldcapacity PID：⽼年代内存分析
+6. jstat -gcmetacapacity PID：元数据区内存分析
+
 #  4.  jstack
 > jstack是java虚拟机自带的一种堆栈跟踪工具。jstack用于打印出给定的java进程ID或core file或远程调试服务的Java堆栈信息
 
 <img src="https://s1.ax1x.com/2020/04/08/GRZdat.png" style="zoom:67%;" />
 
-# Jmap
+# 5. Jmap
 
 　jmap命令是一个可以输出所有内存中对象的工具，甚至可以将VM 中的heap，以二进制输出成文本。
 
