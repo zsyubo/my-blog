@@ -4,7 +4,7 @@ linux中，所有对设备或文件的操作都是通过文件描述符进行的
 
 **默认文件描述符**
 
-一个进程启动，默认会打开3个文件：标准输入(0)、标准输出(1)、标准错误(2)，这些常量定义在`unistd.h`中。
+`一个进程启动，默认会打开3个文件：标准输入(0)、标准输出(1)、标准错误(2)`，这些常量定义在`unistd.h`中。
 
 **文件指针可以和文件描述符之间互相转换：**
 
@@ -12,7 +12,7 @@ linux中，所有对设备或文件的操作都是通过文件描述符进行的
 // 文件指针-> 文件描述符
 int fileno(FILE *stream)
 //文件描述符->文件指针
-  FILE *fdopen(int fd,const char *mode);
+FILE *fdopen(int fd,const char *mode);
 ```
 
 **打印stdin的文件描述符值**
@@ -21,6 +21,7 @@ int fileno(FILE *stream)
 cout << fileno(stdin) << endl; //0
 cout << fileno(stdout) << endl;//1
 cout << fileno(stderr) << endl;//2
+打开其他文件 // 3
 ```
 
 # 打开、创建文件
@@ -39,7 +40,7 @@ open有打开数量限制，命令`ulimit  -a`来查看。
 
 - pathname： (绝对或者相对)路径+文件名称
 - flags: 文件打开方式
-- mode: 规定该文件的访问权限。
+- mode: 规定该文件的访问权限。  比如 0777， 前面的0是必须的，因为是8进制数
 
 ## flags
 
@@ -69,6 +70,10 @@ int fd = open("hell11o.txt",O_CREAT|O_RDWR);
        perror("Error: ");
  }
 ```
+
+## 打开文件的个数限制
+
+linux默认限制只能最多打开1024个，可以通过`ulimit -a`来查看限制，当然也可以修改限制。
 
 # 创建文件(旧)
 

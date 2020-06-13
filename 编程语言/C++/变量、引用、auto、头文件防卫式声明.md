@@ -117,24 +117,24 @@ const int& uuu= 6;// 编译成功
 
 3. 同时引用更安全，指针可能存在空指针、野指针的情况。但是引用不存在无效引用，也不需要显示的解除引用。`所以在不需要改变所指地址时，就引用使用引用而不是指针。`
 
-# # nullptr  C++11 引入
+# 3 nullptr  C++11 引入
 
 用来表示空指针。和NULL类似，但类型不同。引入的目的主要是避免指针和整数的混淆(NULL 底层实际为0；并不是完全意义上的空值。)
 在实际开发中，如果需要用到 `指针与NULL的场合，用nullptr来取代NULL`。
 
-```
+```c++
  char *p = NULL;
  char *q = nullptr;
 ```
 区别
-```
+```c++
 // 不会报错
  int a = NULL;
  // 语法报错
  //int b = nullptr;
 ```
 蛋疼的地方
-```
+```c++
  if (p == nullptr)
  {
   cout << "NULL == nullptr" << endl;  
@@ -149,7 +149,7 @@ const int& uuu= 6;// 编译成功
 ```
 
 `NULL和nullptr的类型不同`
-```
+```c++
  cout << typeid(NULL).name() << endl; //int
   cout << typeid(nullptr).name() << endl; // std::nullptr_t
 ```
