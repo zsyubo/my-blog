@@ -36,7 +36,9 @@ int open(const char *pathname, int flags);
 int open(const char *pathname, int flags, mode_t mode);
 ```
 
-open有打开数量限制，命令`ulimit  -a`来查看。
+open有打开数量限制，默认最大打开各位限制为1024
+
+使用命令`ulimit  -a`来查看。
 
 - pathname： (绝对或者相对)路径+文件名称
 - flags: 文件打开方式
@@ -127,7 +129,9 @@ int main()
 }
 ```
 
-# 读取文件数据
+# 读取
+
+## read 读取文件数据
 
 函数read读取文件中的数据。该函数声明：
 
@@ -135,6 +139,66 @@ int main()
 #include <unistd.h>
 ssize_t read(int fd, void * buf, size_t count)
 ```
+
+`fd`: 进行读取的文件描述符
+
+`buf`: 要写入文件内容或读出文件内容的内存地址
+
+`count`: 要读取的字节数
+
+如果成功读取了数据，就返回所读取的`字节数`，如果读取出现错误会返回`-1`，如果读到了文件末尾，那么返回0。
+
+```c++
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+
+int main(int argc, char** argv)
+{
+    int fd = open("hello.txt",O_RDWR);
+    if(fd == -1)
+    {
+        // perror可以查看错误信息
+        // 打印错误：如 ----->open1: No such file or directory
+        perror("open1：");
+        return -1;
+    }
+    int read_max_size = 200;
+    char buf[100];
+	int read_size; // 读取到的字节数
+    while((read_size=read(fd, buf, read_max_size)) > 0)
+    {
+        printf("%s", buf);
+    }
+    // 如果读取到的为-1，那么证明有错误
+    if(read_size == -1)
+    {
+        // EINTR 被信号中断了
+        if(errno == EINTR)
+        {
+            printf("被信号中断了");
+            return -1;
+        }
+    }
+}
+```
+
+常见错误
+
+| 错误值 | 含义                                                         |
+| ------ | ------------------------------------------------------------ |
+| EAGAIN | 使用O_NONBLOCK标志，指定了非阻塞输入输出，但当前没有数据可读 |
+| EBADF  | fd不是一个合法的文件描述符，或者不是为了读操作而打开         |
+| EINTR  | 在读取到数据前被信号中断                                     |
+| EINVAL | fd所指向的对象不适合读，或者是文件打开时指定了O_DIRECT标志   |
+| EISDIR | fd指向一个目录。                                             |
+
+## readdir 读取文件夹
+
+todo
+
+
 
 # 写数据
 
