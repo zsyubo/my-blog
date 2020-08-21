@@ -52,11 +52,44 @@ open有打开数量限制，默认最大打开各位限制为1024
 
 最后三个SYNC(同步)选项会降低性能。
 
+| 参数     | 说明                                             |
+| -------- | ------------------------------------------------ |
+| O_RDONLY | 打开一个只供读取的文件                           |
+| O_WRONLY | 打开一个只供写入的文件                           |
+| O_RDWR   | 打开一个可供读写的文件                           |
+| O_APPEND | 写入的所有数据将被追加到文件的末尾               |
+| O_CREAT  | 打开文件，如果文件不存在就建立文件               |
+| O_EXCL   | 如果已经置O_CREAT且文件存在，就强制open失败      |
+| O_DSYNC  | 每次写入时，等待数据写到磁盘上                   |
+| O_TRUNC  | 在打开文件时，将文件的内容清空                   |
+| O_RSYNC  | 每次读取时，等待相同部分先写到磁盘上             |
+| O_SYNC   | 以同步方式写入文件，强制刷新内核缓冲区到输出文件 |
+
+
+
 ## mode
 
 只有在创建文件时才会使用此参数。指定文件的访问权限
 
+其实这个综合起来就是777
+
 <img src="https://s2.ax1x.com/2020/03/10/8CMeuq.png" style="zoom:50%;" />
+
+| 参数    | 说明                              |
+| ------- | --------------------------------- |
+| S_IRUSR | 文件所有者的读权限位              |
+| S_IWUSR | 文件所有者的写权限位              |
+| S_IXUSR | 文件所有者的执行权限              |
+| S_IRWXU | S_IRUSR&#124;S_IWUSR&#124;S_IXUSR |
+| S_IRGRP | 文件用户组的读权限位              |
+| S_IWGRP | 文件用户组的写权限位              |
+| S_IXGRP | 文件用户组的执行权限              |
+| S_IRWXG | S_IRGRP&#124;S_IWGRP&#124;S_IXGRP |
+| S_IROTH | 文件其他用户的读权限位            |
+| S_IWOTH | 文件其他用户的写权限位            |
+| S_IXOTH | 文件其他用户的执行权限            |
+
+
 
 ## 案例
 
@@ -194,12 +227,6 @@ int main(int argc, char** argv)
 | EINVAL | fd所指向的对象不适合读，或者是文件打开时指定了O_DIRECT标志   |
 | EISDIR | fd指向一个目录。                                             |
 
-## readdir 读取文件夹
-
-todo
-
-
-
 # 写数据
 
 可以使用write函数将数据写入已打开的文件内。
@@ -212,15 +239,69 @@ ssize_t write (int fd, const void * buf, size_t count );
 此函数会将buf所指向内存中的count个字节写入fd所指向的文件内。
 
 - buf：指向一个缓冲区，表示要写的数据
-
 - count：要写数据的长度，单位是字节。
+- fd: 文件描述符
 
-如果函数执行成功，返回实际写入数据的字节数。当有错误发生则返回-1，错误代码可以使用errno查看。
+如果函数执行成功，`返回实际写入数据的字节数`。当有错误发生则返回-1，错误代码可以使用errno查看。
 
 常见的错误有：
 
 - EINTR 此调用被信号中断
-- EADF参数fd是非有效的文件描述符，或该文件已经关闭。
+- EBADF：参数fd是非有效的文件描述符，或该文件已经关闭。
+- EINVAL：fd所有指向的对象不适合写，或者文件打开指定了O_DIRECT标志
+- ENOSPC： fd指向的文件所在设备无可用空间。
+- EPIPE: fd连接到一个管道，或者套接字的读方向一端已经关闭。。
+
+### 案例
+
+```c++
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+
+const int read_max_size = 1024;
+
+// 第一个参数为执行的命令，如：./write  x1 x2, 第一个参数 ./write，第二个参数 x1, 第三个参数 x2
+int main(int argc, char** argv) {
+
+    char buf[1024];
+
+    if (argc < 3) {
+        printf("args is error, args size is %d \n", argc);
+        return -1;
+    }
+    // printf("arg1: %s, arg2: %s \n", argv[1], argv[2]);
+    int rfd = open(argv[1], O_RDONLY);
+    // 此处权限是必须的
+    int wfd = open(argv[2], O_WRONLY | O_CREAT | O_EXCL, S_IRWXU|S_IRWXG);
+    if (rfd < 1 || wfd < 1) {
+        perror("open error");
+        return -1;
+    }
+
+    int read_size = 0;
+    while ((read_size = read(rfd, buf, read_max_size)) > 0) {
+        if (read_size == -1) {
+            perror("read error");
+            return -1;
+        }
+        // 写数据
+        int res = write(wfd, buf, read_size);
+        if(res == -1){
+            perror("write error");
+            return -1;
+        }
+        if(res != read_size){
+            perror("write size error");
+            return -1;
+        }
+    }
+}
+
+```
+
+
 
 # 文件偏移量
 
@@ -233,13 +314,229 @@ open函数如果没有指定`O_APPEND`参数，那么文件的偏移量为0，�
 off_t lseek (int fd, off_t offset, int whence );		
 ```
 
-lseek函数执行成功，返回心得文件偏移量值(相对文件开头的0)，如果失败，就返回-1。当然我们也可以传 负值，`所以判断是否操作成功，要使用是否等于-1来判断。`
+lseek函数执行成功，返回心得文件偏移量值(相对文件开头的0)，`如果失败，就返回-1`。当然我们也可以传 负值，`所以判断是否操作成功，要使用是否等于-1来判断。`
 
 `off_t`为偏移量，`whence`为操作模式，具体有3中操作模式：
 
-- SEEK_SET: offset为相对文件开始开始处的值
+- SEEK_SET: offset为相对文件开始开始处的值.
 - SEEK_CUR: offset为相对当前位置的值。
 - SEEK_END: offset为相对文件结尾的值。
+
+
+
+# 文件访问权限
+
+因为Linux严格的权限，所以我们在打开文件前，一般都需要先判断是否有这个权限。
+
+```c++
+int access(const char *pathname, int mode);
+```
+
+mode: 多个权限可以使用`|`连接
+
+- R_OK 判断文件是否有读权限
+- W_OK 判断文件是否有写权限
+- X_OK 判断文件是否有可执行权限
+- F_OK 判断文件是否存在
+
+**`对文件的测试成功返回0，只要有一个权限不符合，就返回-1。`**
+
+## 案列
+
+```c++
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+
+int main(int argc, char** argv) {
+    const char *path = "h1.txt";
+    int access_flag = access(path, R_OK|F_OK);
+    if(access_flag < 0){
+        printf("auth is error");
+        return -1;
+    }
+    return 0;
+}
+```
+
+# 修改文件属性
+
+当文件被打开之后，进程会获取一个文件描述符，文件描述符包含了文件描述符标志以及当前进程对文件的访问权限等信息标志位。
+
+```c++
+int fcntl(int fd, int cmd);
+int fcntl(int fd, int cmd, long arg);
+```
+
+cmd指定了函数的操作，常见的有
+
+| cmd     | 功能                         |
+| ------- | ---------------------------- |
+| F_GETFL | 获取文件描述符对应的文件标志 |
+| F_SETFL | 设置文件描述符对应的文件标志 |
+
+# 文件夹操作
+
+## 创建文件夹
+
+```c++
+#include <sys/stat.h>
+#include <sys/types.h>
+int mkdir(const char *pathname, mode_t mode);
+```
+
+- pathname： 路径
+- mode  权限
+
+返回`-1`则代表创建失败。如果目录有文件就会删除失败。需要进行递归删除。
+
+### 案例
+
+```c++
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <errno.h>
+
+int main(){
+	int ret = mkdir("xx/xx");
+	// 创建失败
+	if(ret == -1){
+		// 文件夹已存在
+		if( errno == EEXIST){
+		
+		}
+	}
+}
+```
+
+
+
+## 删除文件夹
+
+```c++
+#include <unistd.h>
+int rmdir(const char *pathname);
+```
+
+pathname: 删除路径
+
+返回`-1`则代表删除失败。
+
+## 打开文件夹
+
+```c++
+#include <sys/types.h>
+#include <dirent.h>
+DIR *opendir(const char *name);
+DIR *fdopendir(int fd);
+```
+
+打开文件夹，如果打开失败则会返回NULL
+
+## readdir读文件夹  
+
+单独使用`opendir`是无意义的，需要使用`readdir  `配合使用
+
+```c++
+#include <dirent.h>
+struct dirent *readdir(DIR *dirp);
+struct dirent {
+ino_t d_ino; /* 此目录进入点的inode */
+off_t d_off; /* 目录文件开头至此目录进入点的位移 */
+unsigned short d_reclen; /* length of this record */
+unsigned char d_type; /* 所指的文件类型*/
+char d_name[256]; /* 文件名 */
+};
+```
+
+### 案例
+
+```c++
+DIR* dir = opendir("/home/zsyubo/Documents/c++/io/sss");
+// 先判断是否为空
+    if(dir == NULL){
+        printf("flodir open fire");
+        perror("error");
+        return 0;
+    }
+   struct  dirent *ptr;
+    int i;
+    while((ptr = readdir(dir)) != NULL){
+        printf("d_name: %s\n", ptr->d_name);
+    }
+	// 关闭
+    closedir(dir);
+```
+
+## rewinddir 重置读取目录的位置  
+
+```c++
+#include <sys/types.h>
+#include <dirent.h>
+void rewinddir(DIR *dirp);
+```
+
+就是吧`readdir`的读取位置重置
+
+## telldir   记录dir流的当前读取位置
+
+```c++
+#include <dirent.h>
+long telldir(DIR *dirp);
+```
+
+
+
+### seekdir  设置dir流当前的读取位置
+
+```c++
+void seekdir(DIR *dirp, long offset);
+```
+
+## closedir 关闭dir流
+
+```c++
+#include <sys/types.h>
+#include <dirent.h>
+int closedir(DIR *dirp);
+```
+
+## 案例
+
+遍历目录，并打印目录下的文件夹名
+
+```c++
+int main(int argc, char** argv) {
+    char* path ="/home/zsyubo/Documents/c++/io/";
+    DIR* dir = opendir(path);
+    if(dir == NULL){
+        perror("error");
+        return 0;
+    }
+
+   struct  dirent *ptr;
+    while((ptr = readdir(dir)) != NULL){
+        // 拼接完整目录
+        char name[100];
+        sprintf(name, "%s/%s", path, ptr->d_name);
+
+        // 如果是 . 或者.. 则跳过
+        if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
+            continue;
+		// 使用stat配合判断是否是文件夹
+        struct stat stbuf;
+        if (stat(name, &stbuf) == -1) {
+            perror("stat");
+        }
+        if (S_ISDIR(stbuf.st_mode)){
+            printf("isdir: %s \n", ptr->d_name);
+        }
+    }
+    closedir(dir);
+}
+```
 
 # 获取文件状态
 
