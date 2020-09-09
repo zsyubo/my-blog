@@ -1,3 +1,5 @@
+**`如果需要做跨平台应用，那么不要吧 #include写在头文件中`**
+
 #    makefile是什么？
 
 实际开发中，一个工程是有许多源文件的，手动一个个编译时不可能的。
@@ -35,14 +37,6 @@ clean:
 	-	rm hello_demo  speak.o  hello.o
 ```
 
-这个clean就相当于一个`标签`
-
-同时我们也可以直接通过make调用
-
-`make clean`
-
-
-
 # 工作流程
 
 1. make会在当前目录下找名字叫“Makefile”或“makefile”的文件。
@@ -65,6 +59,50 @@ clean:
 objects = hello.o speak.o
 hello_demo : ${objects}
 ```
+
+访问变量可以用`${}`也可以用`$()`
+
+**自带变量**
+
+`$@`： 生成目标
+
+```makefile
+hello.o: hello.cpp  speak.h
+	g++ -c hello.cpp -o $@
+```
+
+这儿的`%@`代表`hello.o`。
+
+`@+`: 指定依赖项
+
+```makefile
+hello.o: hello.cpp  speak.h
+	g++ -c $+ -o $@
+```
+
+**简化**
+
+通过上面的变量，我们可以继续简化一个Makefile
+
+```makefile
+CC=g++
+OCC = $(CC) $+ -o$@ -c
+
+testLog:testLog.o log.o
+	${CC} testLog.o log.o -o$@
+testLog.o:testLog.cpp
+	${OCC}
+log.o:log.cpp
+	${OCC}
+clean:
+	rm testLog.o log.o testLog
+```
+
+这个clean就相当于一个`标签`
+
+同时我们也可以直接通过make调用
+
+`make clean`
 
 # 自动推导
 
