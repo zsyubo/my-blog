@@ -1,4 +1,4 @@
-#什么是GCC
+# 什么是GCC
 
 GNU C Compiler的缩写，当然不只支持C，还支持C++。
 
